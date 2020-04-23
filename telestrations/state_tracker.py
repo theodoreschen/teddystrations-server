@@ -7,14 +7,41 @@ from uuid import UUID
 
 
 class AbstractStateTracker(ABC):
-    _game_rounds: int
-    _current_round: int
-    _viewing_uuid: UUID
-    _admin_uuid: UUID
-
     @abstractmethod
     def __init__(self, *args, **kwargs):
         pass
+
+    @abstractmethod
+    def set_admin_uuid(self, a_uuid: UUID):
+        return
+
+    @abstractmethod
+    def get_admin_uuid(self) -> UUID:
+        return None
+
+    @abstractmethod
+    def set_number_game_rounds(self, rounds: int):
+        return
+
+    @abstractmethod
+    def get_number_game_rounds(self) -> int:
+        return -1
+
+    @abstractmethod
+    def set_current_game_round(self, round: int):
+        return
+
+    @abstractmethod
+    def get_current_game_round(self) -> int:
+        return -1
+
+    @abstractmethod
+    def set_viewing_uuid(self, v_uuid: UUID, round: int=0):
+        return
+
+    @abstractmethod
+    def get_viewing_uuid(self) -> UUID:
+        return None
 
     @abstractmethod
     def set_state(self, state: GameState) -> bool:
