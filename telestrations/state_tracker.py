@@ -2,7 +2,7 @@ from abc import (
     ABC,
     abstractmethod
 )
-from .utils import GameState
+from .data_types import GameState
 from uuid import UUID
 
 
@@ -17,22 +17,22 @@ class AbstractStateTracker(ABC):
         pass
 
     @abstractmethod
-    def setState(self, state: GameState) -> bool:
+    def set_state(self, state: GameState) -> bool:
         return True
 
     @abstractmethod
-    def getState(self) -> GameState:
+    def get_state(self) -> GameState:
         return GameState.UNKNOWN
 
     @abstractmethod
-    def timerStart(self, duration: int=60):
+    def timer_start(self, duration: int=60):
         return
 
     @abstractmethod
-    def timerStop(self):
+    def timer_stop(self):
         return
 
     @abstractmethod
-    def timerTimeRemaining(self) -> int:
+    def timer_time_remaining(self) -> int:
         return -1
 
