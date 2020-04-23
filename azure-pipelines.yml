@@ -35,6 +35,13 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    pip install pytest pytest-azurepipelines coverage
+    coverage run -m pytest
+    coverage xml --include="$(System.DefaultWorkingDirectory)/**/telestrations/*"
+  displayName: 'pytest and coverage'
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory/**/coverage'
