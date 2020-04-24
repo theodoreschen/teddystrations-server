@@ -28,12 +28,8 @@ class TestPlayer(TestCase):
     def test_from_dict(self):
         test_uid = uuid.uuid4()
         test_name = "test"
-        test_obj = {
-            "name": test_name,
-            "uid": str(test_uid)
-        }
 
-        p = Player.from_dict(test_obj)
+        p = Player.from_dict(name=test_name, uid=str(test_uid))
 
         self.assertEqual(p.name, test_name)
         self.assertEqual(p.uid, test_uid)
