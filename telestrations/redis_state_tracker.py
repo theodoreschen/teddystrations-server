@@ -1,7 +1,10 @@
 import redis
 from .state_tracker import AbstractStateTracker
 import uuid
-from .data_types import GameState
+from .data_types import (
+    GameState,
+    str_to_game_state
+)
 
 
 class RedisStateTracker(AbstractStateTracker):
@@ -12,6 +15,9 @@ class RedisStateTracker(AbstractStateTracker):
             host="localhost", port="6379", 
             connection_pool=redis.BlockingConnectionPool()
         )
+
+    def close(self):
+        self._client.close()
 
     def set_admin_uuid(self, uid: uuid.UUID):
         self._client.hset("admin", "uuid", str(uid))
@@ -35,17 +41,21 @@ class RedisStateTracker(AbstractStateTracker):
     def get_current_game_round(self) -> int:
         return super().get_current_game_round()
 
-    def set_viewing_uuid(self, uid: uuid.UUID, round: int=0):
+    def set_viewing_uuid(self, uid: uuid.UUID, index: int=0):
         return super().set_viewing_uuid()
     
     def get_viewing_uuid(self) -> int:
         return super().get_viewing_uuid()
 
     def set_state(self, state: GameState):
-        return super().set_state(state)
+        self._client.hset("game", "state", str(state))
+        return
+    set_state.__doc__ = AbstractStateTracker.set_state.__doc__
 
     def get_state(self) -> GameState:
-        return super().get_state()
+        state = self._client.hget("game", "state").decode("utf8")
+        return str_to_game_state(state)
+    get_state.__doc__ = AbstractStateTracker.set_state.__doc__
 
     def timer_start(self, duration: int=60):
         return super().timer_start(duration=duration)
@@ -55,3 +65,15 @@ class RedisStateTracker(AbstractStateTracker):
 
     def timer_time_remaining(self) -> int:
         return super().timer_time_remaining()
+    
+    def add_player(self, uid: uuid.UUID):
+        return super().add_player(uid)
+
+    def get_player(self, uid: uuid.UUID) -> dict:
+        return super().get_player(uid)
+
+    def get_all_players(self) -> list:
+        return super().get_all_players()
+
+    def delete_player(self, uid: uuid.UUID):
+        return super().delete_player(uid)

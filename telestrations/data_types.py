@@ -18,15 +18,14 @@ class GameState(Enum):
     def __str__(self):
         return f"{self.name.lower()}"
 
-    # @classmethod
-    # def get_game_state(cls, state: str="unknown") -> GameState:
-    #     if state.lower() not in cls._game_state_list:
-    #         return GameState.UNKNOWN
-    #     return GameState[state]
-
 
 _game_state_list = [name.lower() for name, _ in GameState.__members__.items()]
 _game_state_map = {name.lower(): state for name, state in GameState.__members__.items()}
+
+def str_to_game_state(state: str="unknown") -> GameState:
+    if state.lower() not in _game_state_list:
+        return GameState.UNKNOWN
+    return _game_state_map[state.lower()]
 
 
 class Player:

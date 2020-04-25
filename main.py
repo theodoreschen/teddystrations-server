@@ -42,8 +42,12 @@ def admin_uid_check(func):
 # General use
 @app.route("/game-state")
 def game_state():
-    ret = {"state": str(GameState.UNKNOWN), "message": None}
-    return jsonify(ret)
+    state = STATE_TRACKER.get_state()
+    if state == GameState.ROUND_ACTIVE or state == GameState.ROUND_IDLE:
+        message = STATE_TRACKER.get_current_game_round()
+    elif state == GameState.VIEWING_ACTIVE or state == GameState.VIEWING_IDLE:
+        uid, message = STATE_TRACKER.get_viewing_uuid().values()
+    return jsonify({"state": str(state), "message": message})
 
 
 # Game administration endpoints
@@ -105,10 +109,12 @@ def init():
     ADMIN_UID = uuid.uuid4()
     STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
+    STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
 
 
 def shutdown(*_):
-    pass
+    global STATE_TRACKER
+    STATE_TRACKER.close()
 
 
 if __name__ == "__main__":
