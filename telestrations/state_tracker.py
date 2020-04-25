@@ -12,7 +12,10 @@ class AbstractStateTracker(ABC):
         pass
 
     @abstractmethod
-    def set_admin_uuid(self, a_uuid: UUID):
+    def set_admin_uuid(self, uid: UUID):
+        """
+        :param a_uuid UUID: Administrative UUID value
+        """
         return
 
     @abstractmethod
@@ -20,11 +23,11 @@ class AbstractStateTracker(ABC):
         return None
 
     @abstractmethod
-    def set_number_game_rounds(self, rounds: int):
+    def set_number_of_game_rounds(self, rounds: int):
         return
 
     @abstractmethod
-    def get_number_game_rounds(self) -> int:
+    def get_number_of_game_rounds(self) -> int:
         return -1
 
     @abstractmethod
@@ -36,7 +39,7 @@ class AbstractStateTracker(ABC):
         return -1
 
     @abstractmethod
-    def set_viewing_uuid(self, v_uuid: UUID, round: int=0):
+    def set_viewing_uuid(self, uid: UUID, round: int=0):
         return
 
     @abstractmethod
