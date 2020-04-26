@@ -37,7 +37,7 @@ steps:
 - script: |
     pip install pytest pytest-azurepipelines coverage
     coverage run -m pytest
-    coverage xml --include="./telestrations/*"
+    coverage xml --include="./teddystrations/*"
   displayName: 'pytest and coverage'
 
 - task: PublishCodeCoverageResults@1

@@ -4,9 +4,9 @@ services:
     image: redis
     ports:
       - "6379:6379"
-    container_name: "telestrations-redis"
+    container_name: "teddystrations-redis"
   mongo:
     image: mongo
     ports:
       - "27017:27017"
-    container_name: "telestrations-mongo"
+    container_name: "teddystrations-mongo"

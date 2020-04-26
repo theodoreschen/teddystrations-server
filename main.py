@@ -8,7 +8,7 @@ from functools import wraps
 import logging
 import signal
 import uuid
-from telestrations import (
+from teddystrations import (
     Player,
     GameState,
     RedisStateTracker
@@ -25,7 +25,7 @@ logging.basicConfig(
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
 
-app = Flask("telestrations", static_url_path="")
+app = Flask("teddystrations", static_url_path="")
 CORS(app)
 
 
@@ -90,11 +90,15 @@ def game_show_board():
 # Player portal endpoints
 @app.route("/")
 def player_page():
+    if STATE_TRACKER.get_state() == GameState.UNAUTHENTICATED:
+        return 404
     return "<h1>Player page</h1>"
 
 
 @app.route("/player/add", methods=["post"])
 def player_add():
+    if STATE_TRACKER.get_state() != GameState.READY:
+        return 404
     ret = {"name": "test", "id": None}
     return jsonify(ret)
 
