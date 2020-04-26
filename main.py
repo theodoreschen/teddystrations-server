@@ -43,6 +43,7 @@ def admin_uid_check(func):
 @app.route("/game-state")
 def game_state():
     state = STATE_TRACKER.get_state()
+    message = None
     if state == GameState.ROUND_ACTIVE or state == GameState.ROUND_IDLE:
         message = STATE_TRACKER.get_current_game_round()
     elif state == GameState.VIEWING_ACTIVE or state == GameState.VIEWING_IDLE:
