@@ -11,7 +11,7 @@ import json
 class TestPlayer(TestCase):
     def test_to_dict(self):
         test_uid = uuid.uuid4()
-        p = Player("test")
+        p = Player(name="test")
 
         pd = p.to_dict()
         self.assertNotEqual(pd["uid"], str(test_uid))
@@ -19,20 +19,11 @@ class TestPlayer(TestCase):
 
     def test_to_json(self):
         test_uid = uuid.uuid4()
-        p = Player("test")
+        p = Player(name="test")
 
         j = json.loads(p.to_json())
         self.assertNotEqual(j["uid"], str(test_uid))
         self.assertEqual(j["name"], "test")
-
-    def test_from_dict(self):
-        test_uid = uuid.uuid4()
-        test_name = "test"
-
-        p = Player.from_dict(name=test_name, uid=str(test_uid))
-
-        self.assertEqual(p.name, test_name)
-        self.assertEqual(p.uid, test_uid)
 
     def test_from_json(self):
         test_uid = uuid.uuid4()

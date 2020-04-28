@@ -32,9 +32,16 @@ class Player:
     name: str
     uid: uuid.UUID
 
-    def __init__(self, name: str):
+    def __init__(self, *, name: str=None, uid: uuid.UUID=None):
         self.name = name
-        self.uid = uuid.uuid4()
+        self.uid = uid
+
+        if self.uid is None:
+            self.uid = uuid.uuid4()
+
+        if self.name is None:
+            self.name = str(self.uid)
+
 
     def to_dict(self) -> dict:
         """
@@ -54,21 +61,10 @@ class Player:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_dict(cls, **kwargs):
-        """
-        :param name str: Player.name variable
-        :param uid str: Player.uid variable. Must be valid UUID
-        :return: a Player object with the attributes defined in the arguments
-        """
-        cls.name = kwargs["name"]
-        cls.uid = uuid.UUID(kwargs["uid"])
-        return cls
-
-    @classmethod
     def from_json(cls, json_obj: str):
         """
         :param json_obj str: valid JSON-represented string of a Player object
         :return: a Player object with the attributes defined by json_obj
         """
         obj = json.loads(json_obj)
-        return cls.from_dict(name=obj["name"], uid=obj["uid"])
+        return cls(name=obj["name"], uid=uuid.UUID(obj["uid"]))

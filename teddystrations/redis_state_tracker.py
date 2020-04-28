@@ -3,6 +3,7 @@ from .state_tracker import AbstractStateTracker
 import uuid
 from .data_types import (
     GameState,
+    Player,
     str_to_game_state
 )
 
@@ -76,10 +77,11 @@ class RedisStateTracker(AbstractStateTracker):
 
     def get_all_players(self) -> list:
         player_uids = [uid.decode() for uid in self._client.smembers("players")]
-        players = {}
+        players = []
         for uid in player_uids:
             player_name = self._client.hget(uid, "name")
-            players[uid] = player_name.decode()
+            p = Player(name=player_name.decode(), uid=uid)
+            players.append(p.to_dict())
         return players
 
     def delete_player(self, uid: uuid.UUID):
