@@ -68,8 +68,9 @@ class RedisStateTracker(AbstractStateTracker):
         return super().timer_time_remaining()
     
     def add_player(self, name: str, uid: uuid.UUID):
-        self._client.sadd("players", str(uid))
-        self._client.hset(str(uid), "name", name)
+        pipe = self._client.pipeline()
+        pipe.sadd("players", str(uid))
+        pipe.hset(str(uid), "name", name)
         return
 
     def get_player(self, uid: uuid.UUID) -> dict:
@@ -86,3 +87,12 @@ class RedisStateTracker(AbstractStateTracker):
 
     def delete_player(self, uid: uuid.UUID):
         return super().delete_player(uid)
+
+    def reset_game_state(self):
+        self.set_state(GameState.UNAUTHENTICATED)
+        self._client.hdel("game", "rounds", "current-round")
+        player_uids = [uid.decode() for uid in self._client.smembers("players")]
+        for uid in player_uids:
+            self._client.delete(uid)
+        self._client.delete("players")
+        return

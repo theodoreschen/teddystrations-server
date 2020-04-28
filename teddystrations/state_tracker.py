@@ -99,3 +99,10 @@ class AbstractStateTracker(ABC):
     @abstractmethod
     def delete_player(self, uid: UUID):
         return
+
+    @abstractmethod
+    def reset_game_state(self):
+        """
+        Resets the game to its original state
+        """
+        return

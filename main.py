@@ -55,8 +55,14 @@ def game_state():
 
 # Game administration endpoints
 @app.route("/game", methods=["get", "delete"])
-def game_admin_page():
-    return "<h1>Admin Page</h1>"
+def game_admin():
+    print(request.method)
+    if request.method == "DELETE":
+        STATE_TRACKER.reset_game_state()
+        return '', 200
+    elif request.method == "GET":
+        return "<h1>Admin Page</h1>"
+    return '', 404
 
 
 @app.route("/game/authenticate", methods=["put"])
