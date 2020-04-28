@@ -55,7 +55,7 @@ class AbstractStateTracker(ABC):
 
     @abstractmethod
     def get_viewing_uuid(self) -> dict:
-        return {}
+        return {"uid": "", "message": ""}
 
     @abstractmethod
     def set_state(self, state: GameState):

@@ -15,6 +15,7 @@ from teddystrations import (
 )
 import sys
 
+DEBUG = True
 ADMIN_UID = None
 STATE_TRACKER = None
 
@@ -32,8 +33,9 @@ CORS(app)
 def admin_uid_check(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if (ADMIN_UID is not None) and\
-            (request.args["uid"] != str(ADMIN_UID)):
+        if ADMIN_UID is None:
+            return "Unhandled server error state", 500
+        if request.args["uid"] != str(ADMIN_UID):
             return "Invalid administrator UUID", 400
         return func(*args, **kwargs)
     return wrapper
@@ -53,7 +55,6 @@ def game_state():
 
 # Game administration endpoints
 @app.route("/game", methods=["get", "delete"])
-@admin_uid_check
 def game_admin_page():
     return "<h1>Admin Page</h1>"
 
@@ -61,7 +62,15 @@ def game_admin_page():
 @app.route("/game/authenticate", methods=["put"])
 @admin_uid_check
 def game_admin_auth():
-    return 400
+    STATE_TRACKER.set_state(GameState.READY)
+    return '', 200
+
+
+@app.route("/game/players", methods=["get"])
+@admin_uid_check
+def game_admin_players():
+    players = STATE_TRACKER.get_all_players()
+    return jsonify(players), 200
 
 
 @app.route("/game/start", methods=["put"])
@@ -111,7 +120,10 @@ def player_submit():
 
 def init():
     global ADMIN_UID, STATE_TRACKER
-    ADMIN_UID = uuid.uuid4()
+    if DEBUG:
+        ADMIN_UID = uuid.UUID("01234567-0123-4567-89ab-0123456789ab")
+    else:
+        ADMIN_UID = uuid.uuid4()
     STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
     STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
@@ -128,6 +140,6 @@ if __name__ == "__main__":
     sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
     sys.stderr.flush()
     try:
-        app.run(host="127.0.0.1", debug=True)
+        app.run(host="127.0.0.1", debug=DEBUG)
     except KeyboardInterrupt:
         shutdown()

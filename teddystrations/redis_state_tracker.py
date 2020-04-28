@@ -44,7 +44,7 @@ class RedisStateTracker(AbstractStateTracker):
     def set_viewing_uuid(self, uid: uuid.UUID, index: int=0):
         return super().set_viewing_uuid()
     
-    def get_viewing_uuid(self) -> int:
+    def get_viewing_uuid(self) -> dict:
         return super().get_viewing_uuid()
 
     def set_state(self, state: GameState):
@@ -73,7 +73,12 @@ class RedisStateTracker(AbstractStateTracker):
         return super().get_player(uid)
 
     def get_all_players(self) -> list:
-        return super().get_all_players()
+        player_uids = [uid.decode() for uid in self._client.smembers("players")]
+        players = {}
+        for uid in player_uids:
+            player_name = self._client.hget(uid, "name")
+            players[uid] = player_name.decode()
+        return players
 
     def delete_player(self, uid: uuid.UUID):
         return super().delete_player(uid)
