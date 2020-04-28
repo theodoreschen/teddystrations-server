@@ -109,8 +109,11 @@ def player_page():
 def player_add():
     if STATE_TRACKER.get_state() != GameState.READY:
         return 404
-    ret = {"name": "test", "id": None}
-    return jsonify(ret)
+    data = request.get_json()
+    # TODO: jsonschema check data
+    player_uid = uuid.uuid4()
+    STATE_TRACKER.add_player(data["name"], player_uid)
+    return 200
 
 
 @app.route("/player/:uid", methods=["post", "put"])

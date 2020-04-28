@@ -2,3 +2,20 @@
 
 # teddystrations-server
 Backend server running teddystrations game
+
+## Requirements
+- Python3.6+
+- Docker
+
+## Installation
+Highly recommended this is done in a virtualenv because you should anyway.
+
+```
+pip3 install -r requirements.txt
+```
+
+## Running
+```
+docker-compose up -d
+python3 main.py
+```

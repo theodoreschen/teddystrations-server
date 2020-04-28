@@ -66,8 +66,10 @@ class RedisStateTracker(AbstractStateTracker):
     def timer_time_remaining(self) -> int:
         return super().timer_time_remaining()
     
-    def add_player(self, uid: uuid.UUID):
-        return super().add_player(uid)
+    def add_player(self, name: str, uid: uuid.UUID):
+        self._client.sadd("players", str(uid))
+        self._client.hset(str(uid), "name", name)
+        return
 
     def get_player(self, uid: uuid.UUID) -> dict:
         return super().get_player(uid)
