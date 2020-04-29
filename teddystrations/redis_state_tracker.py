@@ -71,6 +71,7 @@ class RedisStateTracker(AbstractStateTracker):
         pipe = self._client.pipeline()
         pipe.sadd("players", str(uid))
         pipe.hset(str(uid), "name", name)
+        pipe.execute()
         return
 
     def get_player(self, uid: uuid.UUID) -> dict:

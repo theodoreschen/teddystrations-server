@@ -119,7 +119,7 @@ def player_add():
     # TODO: jsonschema check data
     player_uid = uuid.uuid4()
     STATE_TRACKER.add_player(data["name"], player_uid)
-    return 200
+    return jsonify({"name": data["name"], "uid": str(player_uid)}), 200
 
 
 @app.route("/player/:uid", methods=["post", "put"])
