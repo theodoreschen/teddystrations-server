@@ -82,7 +82,17 @@ def game_admin_players():
 @app.route("/game/start", methods=["put"])
 @admin_uid_check
 def game_admin_start():
-    return 400
+    """
+    PUT /game/start?uid=UUID&nplayers=INT
+    """
+    # calculate and set number of rounds
+    num_of_players = STATE_TRACKER.get_num_of_players()
+    STATE_TRACKER.set_number_of_game_rounds(num_of_players)
+    # update state
+    STATE_TRACKER.set_state(GameState.STARTED)
+    # start timer
+    STATE_TRACKER.timer_start(120)
+    return 200
 
 
 @app.route("/game/next-round", methods=["put"])

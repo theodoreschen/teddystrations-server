@@ -16,17 +16,17 @@ class AbstractDataMgmt(ABC):
         return None
 
     @abstractmethod
-    def get_player(self, uid: str) -> Player:
+    def get_player(self, uid: UUID) -> Player:
         return None
 
     @abstractmethod
-    def delete_player(self, uid: str) -> Player:
+    def delete_player(self, uid: UUID) -> Player:
         return None
 
     @abstractmethod
-    def add_content(self, uid: str, content: str):
+    def add_content(self, uid: UUID, content: str):
         return
 
     @abstractmethod
-    def retrieve_content(self, uid: str):
+    def retrieve_content(self, uid: UUID):
         return

@@ -35,18 +35,50 @@ class AbstractStateTracker(ABC):
 
     @abstractmethod
     def set_number_of_game_rounds(self, rounds: int):
+        """
+        Sets the number of rounds as well as initializes current round to 1
+
+        :param rounds int: Number of rounds in the game
+        """
         return
 
     @abstractmethod
     def get_number_of_game_rounds(self) -> int:
+        """
+        :return: number of rounds
+        :rtype: int
+        """
         return -1
 
     @abstractmethod
     def set_current_game_round(self, round: int):
+        """
+        Sets the current round to input
+
+        :param round int: current round to force the game to
+        """
+        return
+
+    @abstractmethod
+    def increment_game_round(self):
+        """
+        Increments the current round value by 1
+        """
+        return
+
+    @abstractmethod
+    def decrement_game_round(self):
+        """
+        Decrements the current round value by 1
+        """
         return
 
     @abstractmethod
     def get_current_game_round(self) -> int:
+        """
+        :return: current round value
+        :rtype: int
+        """
         return -1
 
     @abstractmethod
@@ -85,7 +117,11 @@ class AbstractStateTracker(ABC):
         return -1
 
     @abstractmethod
-    def add_player(self, uid: UUID):
+    def add_player(self, name: str, uid: UUID):
+        """
+        :param name str: Name of player
+        :param uuid UUID: Generated UUID for player
+        """
         return
 
     @abstractmethod
@@ -93,7 +129,19 @@ class AbstractStateTracker(ABC):
         return {}
 
     @abstractmethod
+    def get_num_of_players(self) -> int:
+        """
+        :return: number of players registered
+        :rtype: int
+        """
+        return -1
+
+    @abstractmethod
     def get_all_players(self) -> list:
+        """
+        :return: A list of all Player objects registered
+        :rtype: list
+        """
         return []
 
     @abstractmethod

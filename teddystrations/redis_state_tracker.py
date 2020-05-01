@@ -6,6 +6,7 @@ from .data_types import (
     Player,
     str_to_game_state
 )
+import time
 
 
 class RedisStateTracker(AbstractStateTracker):
@@ -31,13 +32,25 @@ class RedisStateTracker(AbstractStateTracker):
     get_admin_uuid.__doc__ = AbstractStateTracker.get_admin_uuid.__doc__
 
     def set_number_of_game_rounds(self, rounds: int):
-        return super().set_number_of_game_rounds()
+        pipe = self._client.pipeline()
+        pipe.hset("game", "rounds", str(rounds))
+        pipe.set("current-round", "1")
+        pipe.execute()
+        return
 
     def get_number_of_game_rounds(self) -> int:
-        return super().get_number_of_game_rounds()
+        rounds = int(self._client.hget("game", "rounds").decode('utf8'))
+        return rounds
 
     def set_current_game_round(self, round: int):
-        return super().set_current_game_round()
+        self._client.set("current-round", str(round))
+        return
+
+    def increment_game_round(self):
+        self._client.incr("current-round")
+
+    def decrement_game_round(self):
+        self._client.decr("current-round")
 
     def get_current_game_round(self) -> int:
         return super().get_current_game_round()
@@ -59,9 +72,15 @@ class RedisStateTracker(AbstractStateTracker):
     get_state.__doc__ = AbstractStateTracker.set_state.__doc__
 
     def timer_start(self, duration: int=60):
-        return super().timer_start(duration=duration)
+        current_time = int(time.time())
+        self._client.hmset(
+            "timer", 
+            {"timer-start": str(current_time), "duration": str(duration)}
+        )
+        return 
 
     def timer_stop(self):
+        # self._client.hgetall("timer").decode()
         return super().timer_stop()
 
     def timer_time_remaining(self) -> int:
@@ -77,6 +96,10 @@ class RedisStateTracker(AbstractStateTracker):
     def get_player(self, uid: uuid.UUID) -> dict:
         return super().get_player(uid)
 
+    def get_num_of_players(self) -> int:
+        players_uids = self._client.smembers("players")
+        return len(players_uids)
+
     def get_all_players(self) -> list:
         player_uids = [uid.decode() for uid in self._client.smembers("players")]
         players = []
@@ -90,10 +113,15 @@ class RedisStateTracker(AbstractStateTracker):
         return super().delete_player(uid)
 
     def reset_game_state(self):
-        self.set_state(GameState.UNAUTHENTICATED)
-        self._client.hdel("game", "rounds", "current-round")
         player_uids = [uid.decode() for uid in self._client.smembers("players")]
+        pipe = self._client.pipeline()
+
+        # self.set_state(GameState.UNAUTHENTICATED)
+        pipe.hset("game", "state", str(GameState.UNAUTHENTICATED))
+        pipe.hdel("game", "rounds")
         for uid in player_uids:
-            self._client.delete(uid)
-        self._client.delete("players")
+            pipe.delete(uid)
+        pipe.delete("players")
+        pipe.delete("current-round")
+        pipe.execute()
         return
