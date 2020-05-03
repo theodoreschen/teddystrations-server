@@ -92,7 +92,7 @@ def game_admin_start():
     STATE_TRACKER.set_state(GameState.STARTED)
     # start timer
     STATE_TRACKER.timer_start(120)
-    return 200
+    return '', 200
 
 
 @app.route("/game/next-round", methods=["put"])
