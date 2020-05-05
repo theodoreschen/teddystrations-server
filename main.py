@@ -56,10 +56,16 @@ def game_state():
 # Game administration endpoints
 @app.route("/game", methods=["get", "delete"])
 def game_admin():
-    print(request.method)
-    if request.method == "DELETE":
+    """
+    GET/DELETE /game?uid=UUID
+    """
+    @admin_uid_check
+    def reset_game():
         STATE_TRACKER.reset_game_state()
         return '', 200
+
+    if request.method == "DELETE":
+        return reset_game()
     elif request.method == "GET":
         return "<h1>Admin Page</h1>"
     return '', 404
@@ -75,6 +81,9 @@ def game_admin_auth():
 @app.route("/game/players", methods=["get"])
 @admin_uid_check
 def game_admin_players():
+    """
+    GET /game/players?uid=UUID
+    """
     players = STATE_TRACKER.get_all_players()
     return jsonify(players), 200
 
@@ -89,22 +98,47 @@ def game_admin_start():
     num_of_players = STATE_TRACKER.get_num_of_players()
     STATE_TRACKER.set_number_of_game_rounds(num_of_players)
     # update state
-    STATE_TRACKER.set_state(GameState.STARTED)
+    STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
+    STATE_TRACKER.set_current_game_round(1)
     # start timer
     STATE_TRACKER.timer_start(120)
+    return '', 200
+
+
+@app.route("/game/end-round", methods=["put"])
+@admin_uid_check
+def game_admin_end_round():
+    STATE_TRACKER.timer_stop()
+    STATE_TRACKER.set_state(GameState.ROUND_INACTIVE)
     return '', 200
 
 
 @app.route("/game/next-round", methods=["put"])
 @admin_uid_check
 def game_admin_next_round():
-    return 400
+    STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
+    STATE_TRACKER.increment_game_round()
+    STATE_TRACKER.timer_start(120)
+    return '', 200
 
 
 @app.route("/game/current-round/time-remaining")
 @admin_uid_check
 def game_time_remaining():
-    return 400
+    """
+    GET /game/current-round/time-remaining?uid=UUID
+    """
+    t = STATE_TRACKER.get_timer_info()
+    time_remaining = t.time_remaining()
+    if time_remaining < 0:
+        time_remaining = 0
+    retobj = {
+        "round": STATE_TRACKER.get_current_game_round(),
+        "totalRounds": STATE_TRACKER.get_number_of_game_rounds(),
+        "roundDuration": t.duration,
+        "timeRemaining": time_remaining
+    }
+    return jsonify(retobj), 200
 
 
 @app.route("/game/show-board", methods=["post"])

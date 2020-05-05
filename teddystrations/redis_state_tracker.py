@@ -4,6 +4,7 @@ import uuid
 from .data_types import (
     GameState,
     Player,
+    Timer,
     str_to_game_state
 )
 import time
@@ -53,7 +54,10 @@ class RedisStateTracker(AbstractStateTracker):
         self._client.decr("current-round")
 
     def get_current_game_round(self) -> int:
-        return super().get_current_game_round()
+        r = self._client.get("current-round").decode()
+        if r is None:
+            return -1
+        return int(r)
 
     def set_viewing_uuid(self, uid: uuid.UUID, index: int=0):
         return super().set_viewing_uuid()
@@ -80,11 +84,16 @@ class RedisStateTracker(AbstractStateTracker):
         return 
 
     def timer_stop(self):
-        # self._client.hgetall("timer").decode()
-        return super().timer_stop()
+        t = self._client.hgetall("timer")
+        new_start_time = int(t["timer-start"]) + int(t["duration"])
+        self._client.hset("timer", "timer-start", str(new_start_time))
+        return
 
-    def timer_time_remaining(self) -> int:
-        return super().timer_time_remaining()
+    def get_timer_info(self) -> Timer:
+        timer_info = self._client.hgetall("timer")
+        t = {k.decode(): v.decode() for k, v in timer_info.items()}
+        timer = Timer(timer_start=int(t["timer-start"]), duration=int(t["duration"]))
+        return timer
     
     def add_player(self, name: str, uid: uuid.UUID):
         pipe = self._client.pipeline()

@@ -106,15 +106,25 @@ class AbstractStateTracker(ABC):
 
     @abstractmethod
     def timer_start(self, duration: int=60):
+        """
+        :param duration int: number of seconds to set the timer
+        """
         return
 
     @abstractmethod
     def timer_stop(self):
+        """
+        Ends timer
+        """
         return
 
     @abstractmethod
-    def timer_time_remaining(self) -> int:
-        return -1
+    def get_timer_info(self) -> dict:
+        """
+        :return: information about timer
+        :rtype: dict
+        """
+        return {}
 
     @abstractmethod
     def add_player(self, name: str, uid: UUID):

@@ -1,6 +1,7 @@
 import uuid
 import json
 from enum import Enum, auto
+import time
 
 
 class GameState(Enum):
@@ -68,3 +69,46 @@ class Player:
         """
         obj = json.loads(json_obj)
         return cls(name=obj["name"], uid=uuid.UUID(obj["uid"]))
+
+
+class Timer:
+    timer_start: int
+    duration: int
+
+    def __init__(self, *, timer_start : int=0, duration : int=0):
+        self.timer_start = timer_start
+        self.duration = duration
+
+    def to_dict(self) -> dict:
+        """
+        :return: dict respresentation of the Timer object
+        :rtype: dict
+        """
+        return {
+            "timer_start": timer_start,
+            "duration": duration
+        }
+
+    def time_remaining(self) -> int:
+        """
+        :return: time remaining on timer
+        :rtype: int
+        """
+        current_time = int(time.time())
+        return self.duration - (current_time - self.timer_start)
+
+    def to_json(self) -> str:
+        """
+        :return: JSON-compatible string representation of the Timer object
+        :rtype: str
+        """
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, json_obj: str):
+        """
+        :param json_obj str: valid JSON-represented string of a Timer object
+        :return: a Player object with the attributes defined by json_obj
+        """
+        obj = json.loads(json_obj)
+        return cls(timer_start=obj["timer_start"], duration=obj["duration"])
