@@ -38,24 +38,30 @@ class RedisStateTracker(AbstractStateTracker):
         pipe.set("current-round", "1")
         pipe.execute()
         return
+    set_number_of_game_rounds.__doc__ = AbstractStateTracker.set_number_of_game_rounds.__doc__
 
     def get_number_of_game_rounds(self) -> int:
         rounds = int(self._client.hget("game", "rounds").decode('utf8'))
         return rounds
+    get_number_of_game_rounds.__doc__ = AbstractStateTracker.get_number_of_game_rounds.__doc__
 
     def set_current_game_round(self, round: int):
         self._client.set("current-round", str(round))
         return
+    set_current_game_round.__doc__ = AbstractStateTracker.set_current_game_round.__doc__
 
     def increment_game_round(self):
         self._client.incr("current-round")
+    increment_game_round.__doc__ = AbstractStateTracker.increment_game_round.__doc__
 
     def decrement_game_round(self):
         self._client.decr("current-round")
+    decrement_game_round.__doc__ = AbstractStateTracker.decrement_game_round.__doc__
 
     def get_current_game_round(self) -> int:
-        r = self._client.get("current-round").decode()
-        if r is None:
+        try:
+            r = self._client.get("current-round").decode()
+        except Exception as e:
             return -1
         return int(r)
 
@@ -85,14 +91,17 @@ class RedisStateTracker(AbstractStateTracker):
 
     def timer_stop(self):
         t = self._client.hgetall("timer")
-        new_start_time = int(t["timer-start"]) + int(t["duration"])
-        self._client.hset("timer", "timer-start", str(new_start_time))
+        new_start_time = int(t[b"timer-start"]) + int(t[b"duration"])
+        self._client.hmset(
+            "timer",
+            {"timer-start": str(new_start_time), "duration": "0"}
+        )
         return
 
     def get_timer_info(self) -> Timer:
-        timer_info = self._client.hgetall("timer")
-        t = {k.decode(): v.decode() for k, v in timer_info.items()}
-        timer = Timer(timer_start=int(t["timer-start"]), duration=int(t["duration"]))
+        t = self._client.hgetall("timer")
+        # t = {k.decode(): v.decode() for k, v in timer_info.items()}
+        timer = Timer(timer_start=int(t[b"timer-start"]), duration=int(t[b"duration"]))
         return timer
     
     def add_player(self, name: str, uid: uuid.UUID):

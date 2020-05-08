@@ -4,3 +4,5 @@ from .data_types import (
 )
 
 from .redis_state_tracker import RedisStateTracker
+
+from .mongo_data_mgmt import MongoDataMgmt

@@ -11,13 +11,18 @@ import uuid
 from teddystrations import (
     Player,
     GameState,
-    RedisStateTracker
+    RedisStateTracker,
+    MongoDataMgmt
 )
 import sys
+import argparse
 
 DEBUG = True
 ADMIN_UID = None
 STATE_TRACKER = None
+DB = None
+
+ROUND_DURATION = 120 #seconds
 
 logging.basicConfig(
     format="[%(asctime)s] - %(levelname)s/%(name)s: %(message)s",
@@ -101,7 +106,7 @@ def game_admin_start():
     STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
     STATE_TRACKER.set_current_game_round(1)
     # start timer
-    STATE_TRACKER.timer_start(120)
+    STATE_TRACKER.timer_start(ROUND_DURATION)
     return '', 200
 
 
@@ -109,16 +114,19 @@ def game_admin_start():
 @admin_uid_check
 def game_admin_end_round():
     STATE_TRACKER.timer_stop()
-    STATE_TRACKER.set_state(GameState.ROUND_INACTIVE)
+    STATE_TRACKER.set_state(GameState.ROUND_IDLE)
     return '', 200
 
 
 @app.route("/game/next-round", methods=["put"])
 @admin_uid_check
 def game_admin_next_round():
-    STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
-    STATE_TRACKER.increment_game_round()
-    STATE_TRACKER.timer_start(120)
+    if STATE_TRACKER.get_number_of_game_rounds() == STATE_TRACKER.get_current_game_round():
+        STATE_TRACKER.set_state(GameState.VIEWING_IDLE)
+    else:
+        STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
+        STATE_TRACKER.increment_game_round()
+        STATE_TRACKER.timer_start(ROUND_DURATION)
     return '', 200
 
 
@@ -172,23 +180,32 @@ def player_submit():
 
 
 def init():
-    global ADMIN_UID, STATE_TRACKER
-    if DEBUG:
-        ADMIN_UID = uuid.UUID("01234567-0123-4567-89ab-0123456789ab")
-    else:
-        ADMIN_UID = uuid.uuid4()
+    global STATE_TRACKER, DB
+       
     STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
     STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
+
+    DB = MongoDataMgmt(ADMIN_UID)
 
 
 def shutdown(*_):
     global STATE_TRACKER
     STATE_TRACKER.close()
+    DB.close()
 
 
 if __name__ == "__main__":
-    init()
+    parser = argparse.ArgumentParser("Launch the Teddystrations backend server")
+    parser.add_argument('--debug', action='store_true', help="debug mode")
+    parser.add_argument('uuid', help="game_uuid")
+    args = parser.parse_args()
+
+    DEBUG = args.debug
+    if DEBUG:
+        ADMIN_UID = uuid.UUID("01234567-0123-4567-89ab-0123456789ab")
+    else:
+        ADMIN_UID = uuid.UUID(args.uuid)
 
     sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
     sys.stderr.flush()

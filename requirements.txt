@@ -3,3 +3,4 @@ flask-cors
 jsonschema
 docker-compose
 redis
+pymongo
