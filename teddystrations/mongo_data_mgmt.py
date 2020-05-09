@@ -17,8 +17,8 @@ class MongoDataMgmt(AbstractDataMgmt):
         teddystrations = self._client["teddystrations"]
         registered_games_db = teddystrations["registered_games"]
 
-        if registered_games_db.find_one({"game_id", str(self._game_uuid)}):
-            registered_games_db.insert_one({"game_id", str(self._game_uuid)})
+        if not registered_games_db.find({"game_id": str(self._game_uuid)}):
+            registered_games_db.insert_one({"game_id": str(self._game_uuid)})
 
         self._db = self._client[self._game_uuid]
         self._game_data = self._db["game_data"]

@@ -102,6 +102,7 @@ def game_admin_start():
     # calculate and set number of rounds
     num_of_players = STATE_TRACKER.get_num_of_players()
     STATE_TRACKER.set_number_of_game_rounds(num_of_players)
+    DB.set_game_details(num_of_players)
     # update state
     STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
     STATE_TRACKER.set_current_game_round(1)
@@ -171,6 +172,7 @@ def player_add():
     # TODO: jsonschema check data
     player_uid = uuid.uuid4()
     STATE_TRACKER.add_player(data["name"], player_uid)
+    DB.add_player(data["name"], player_uid)
     return jsonify({"name": data["name"], "uid": str(player_uid)}), 200
 
 
@@ -206,6 +208,8 @@ if __name__ == "__main__":
         ADMIN_UID = uuid.UUID("01234567-0123-4567-89ab-0123456789ab")
     else:
         ADMIN_UID = uuid.UUID(args.uuid)
+
+    init()
 
     sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
     sys.stderr.flush()
