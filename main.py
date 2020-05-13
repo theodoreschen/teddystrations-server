@@ -67,6 +67,7 @@ def game_admin():
     @admin_uid_check
     def reset_game():
         STATE_TRACKER.reset_game_state()
+        DB.reset_game()
         return '', 200
 
     if request.method == "DELETE":
@@ -177,8 +178,43 @@ def player_add():
 
 
 @app.route("/player/:uid", methods=["post", "put"])
-def player_submit():
-    return 400
+def player_submit(uid: str):
+    """
+    POST - (body) json: {
+        round: integer,
+        content: string,
+        originPlayer: <str>UUID
+    }
+
+    PUT /player/<uid>?direction=[next|back]
+    """
+    if request.method == "POST":
+        data = request.get_json()
+        # TODO: JSON check the content
+        player_uuid = uuid.UUID(uid)
+        origin_uuid = uuid.UUID(data["originPlayer"])
+        DB.add_content(player_uuid, origin_uuid, data["content"], int(data["round"]))
+        return '', 200
+    elif request.method == "PUT":
+        return '', 200
+    else:
+        return 400
+
+
+@app.route("/player/:uid/:round")
+def player_get_content(uid: str, round: str):
+    player_list = STATE_TRACKER.get_player_order()
+    def find_player_idx(uid):
+        for idx, u in enumerate(player_list):
+            if u == uid:
+                return idx
+    this_player_idx = find_player_idx(uid)
+    if this_player_idx is None:
+        return 400
+    # need to subtract 1 because game rounds are indexed by 1
+    target_origin_player_uid = player_list[(this_player_idx + int(round) - 1) % len(player_list)]
+    obj = DB.retrieve_content(target_origin_player_uid, int(round))
+    return jsonify(obj), 200
 
 
 def init():

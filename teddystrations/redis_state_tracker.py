@@ -107,6 +107,7 @@ class RedisStateTracker(AbstractStateTracker):
     def add_player(self, name: str, uid: uuid.UUID):
         pipe = self._client.pipeline()
         pipe.sadd("players", str(uid))
+        pipe.rpush("player-order", str(uid))
         pipe.hset(str(uid), "name", name)
         pipe.execute()
         return
@@ -116,7 +117,10 @@ class RedisStateTracker(AbstractStateTracker):
 
     def get_num_of_players(self) -> int:
         players_uids = self._client.smembers("players")
-        return len(players_uids)
+        num_players = self._client.llen("player-order")
+        if len(players_uids) != num_players:
+            print("Game state inconsistency - number of player UUIDs don't match number of tracked players")
+        return num_players
 
     def get_all_players(self) -> list:
         player_uids = [uid.decode() for uid in self._client.smembers("players")]
@@ -126,6 +130,13 @@ class RedisStateTracker(AbstractStateTracker):
             p = Player(name=player_name.decode(), uid=uid)
             players.append(p.to_dict())
         return players
+
+    def get_player_order(self) -> list:
+        num_players = self._client.llen("player-order")
+        players = self._client.lrange("player-order", 0, num_players)
+        players = [p.decode('utf8') for p in players]
+        return players
+    get_player_order.__doc__ = AbstractStateTracker.get_player_order.__doc__
 
     def delete_player(self, uid: uuid.UUID):
         return super().delete_player(uid)
@@ -141,5 +152,6 @@ class RedisStateTracker(AbstractStateTracker):
             pipe.delete(uid)
         pipe.delete("players")
         pipe.delete("current-round")
+        pipe.delete("player-order")
         pipe.execute()
         return

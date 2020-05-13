@@ -155,6 +155,14 @@ class AbstractStateTracker(ABC):
         return []
 
     @abstractmethod
+    def get_player_order(self) -> list:
+        """
+        :return: A list of all Player UUIDs
+        :rtype: list
+        """
+        return []
+
+    @abstractmethod
     def delete_player(self, uid: UUID):
         return
 

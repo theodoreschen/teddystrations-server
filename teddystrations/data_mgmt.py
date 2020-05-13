@@ -41,9 +41,12 @@ class AbstractDataMgmt(ABC):
         return None
 
     @abstractmethod
-    def add_content(self, uid: UUID, content: str, game_round: int):
+    def add_content(
+        self, player_uuid: UUID, origin_player_uuid: UUID, 
+        content: str, game_round: int
+    ):
         return
 
     @abstractmethod
-    def retrieve_content(self, uid: UUID):
+    def retrieve_content(self, origin_player_uuid: UUID, game_round: int):
         return

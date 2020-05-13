@@ -39,7 +39,12 @@ class MongoDataMgmt(AbstractDataMgmt):
         return super().delete_game()
 
     def reset_game(self):
-        return super().reset_game()
+        collection_list = []
+        for collection in self._db.list_collections():
+            collection_list.append(collection["name"])
+        for collection_name in collection_list:
+            self._db.drop_collection(collection_name)
+        return
 
     def add_player(self, name: str, player_uuid: UUID):
         self._players_data.insert_one({
@@ -57,8 +62,23 @@ class MongoDataMgmt(AbstractDataMgmt):
     def delete_player(self, uid) -> Player:
         return super().delete_player(uid)
 
-    def add_content(self, uid: UUID, content: str, game_round: int):
-        return super().add_content(uid, content, game_round)
+    def add_content(
+        self, player_uuid: UUID, origin_player_uuid:
+        UUID, content: str, game_round: int
+    ):
+        puid = self._db[str(origin_player_uuid)]
+        puid.insert_one({
+            "content": content, "round": str(game_round),
+            "contestant": str(player_uuid)
+        })
+        return
+    add_content.__doc__ = AbstractDataMgmt.add_content.__doc__
 
-    def retrieve_content(self, uid: UUID):
-        return super().retrieve_content(uid)
+    def retrieve_content(self, origin_player_uuid: UUID, game_round: int) -> dict:
+        puid = self._db[str(origin_player_uuid)]
+        obj = puid.find_one({"round": game_round})
+        if obj:
+            obj.pop("_id")
+            return obj
+        return {}
+    retrieve_content.__doc__ = AbstractDataMgmt.retrieve_content.__doc__
