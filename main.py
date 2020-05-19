@@ -52,7 +52,7 @@ def game_state():
     state = STATE_TRACKER.get_state()
     message = None
     if state == GameState.ROUND_ACTIVE or state == GameState.ROUND_IDLE:
-        message = STATE_TRACKER.get_current_game_round()
+        message = str(STATE_TRACKER.get_current_game_round())
     elif state == GameState.VIEWING_ACTIVE or state == GameState.VIEWING_IDLE:
         uid, message = STATE_TRACKER.get_viewing_uuid().values()
     return jsonify({"state": str(state), "message": message})
@@ -177,7 +177,7 @@ def player_add():
     return jsonify({"name": data["name"], "uid": str(player_uid)}), 200
 
 
-@app.route("/player/:uid", methods=["post", "put"])
+@app.route("/player/<uid>/", methods=["post", "put"])
 def player_submit(uid: str):
     """
     POST - (body) json: {
@@ -186,7 +186,7 @@ def player_submit(uid: str):
         originPlayer: <str>UUID
     }
 
-    PUT /player/<uid>?direction=[next|back]
+    PUT /player/<uid>/?direction=[next|back]
     """
     if request.method == "POST":
         data = request.get_json()
@@ -201,7 +201,7 @@ def player_submit(uid: str):
         return 400
 
 
-@app.route("/player/:uid/:round")
+@app.route("/player/<uid>/<round>/")
 def player_get_content(uid: str, round: str):
     player_list = STATE_TRACKER.get_player_order()
     def find_player_idx(uid):
@@ -211,9 +211,20 @@ def player_get_content(uid: str, round: str):
     this_player_idx = find_player_idx(uid)
     if this_player_idx is None:
         return 400
-    # need to subtract 1 because game rounds are indexed by 1
+    # need to subtract 1 because we want to return the previous round's information
+    # TODO - this needs to be fixed
     target_origin_player_uid = player_list[(this_player_idx + int(round) - 1) % len(player_list)]
-    obj = DB.retrieve_content(target_origin_player_uid, int(round))
+    obj = DB.retrieve_content(target_origin_player_uid, int(round) - 1)
+    return jsonify(obj), 200
+
+
+@app.route("/game/<player_uid>/<round>/")
+@admin_uid_check
+def game_get_player(player_uid: str, round: str):
+    """
+    GET /game/<player_uid>/<round>/?uid=UUID
+    """
+    obj = DB.retrieve_content(player_uid, int(round))
     return jsonify(obj), 200
 
 
@@ -223,6 +234,7 @@ def init():
     STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
     STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
+    # STATE_TRACKER.set_state(GameState.VIEWING_IDLE)
 
     DB = MongoDataMgmt(ADMIN_UID)
 

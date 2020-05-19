@@ -30,8 +30,8 @@ class MongoDataMgmt(AbstractDataMgmt):
     def set_game_details(self, rounds: int):
         self._game_data.insert_one({
             "page": "game_metadata",
-            "rounds": str(rounds),
-            "date": str(time.time())
+            "rounds": rounds,
+            "date": time.time()
         })
         return
 
@@ -68,8 +68,8 @@ class MongoDataMgmt(AbstractDataMgmt):
     ):
         puid = self._db[str(origin_player_uuid)]
         puid.insert_one({
-            "content": content, "round": str(game_round),
-            "contestant": str(player_uuid)
+            "content": content, "round": game_round,
+            "originPlayer": str(player_uuid)
         })
         return
     add_content.__doc__ = AbstractDataMgmt.add_content.__doc__
