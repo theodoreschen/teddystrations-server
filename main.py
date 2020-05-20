@@ -233,7 +233,6 @@ def init():
     STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
     STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
-    # STATE_TRACKER.set_state(GameState.VIEWING_IDLE)
 
     DB = MongoDataMgmt(ADMIN_UID)
 
@@ -261,6 +260,16 @@ if __name__ == "__main__":
     sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
     sys.stderr.flush()
     try:
-        app.run(host="127.0.0.1", debug=DEBUG)
+        app.run(host="127.0.0.1", threaded=True, debug=DEBUG)
     except KeyboardInterrupt:
         shutdown()
+else:
+    import signal
+    import os
+    signal.signal(signal.SIGINT, shutdown)
+
+    ADMIN_UID = uuid.UUID(os.environ["ADMIN_UUID"])
+    init()
+
+    sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
+    sys.stderr.flush()

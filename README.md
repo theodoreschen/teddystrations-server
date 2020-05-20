@@ -17,5 +17,5 @@ pip3 install -r requirements.txt
 ## Running
 ```
 docker-compose up -d
-python3 main.py
+uwsgi --ini game-server.ini
 ```
