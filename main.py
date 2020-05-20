@@ -212,9 +212,8 @@ def player_get_content(uid: str, round: str):
     if this_player_idx is None:
         return 400
     # need to subtract 1 because we want to return the previous round's information
-    # TODO - this needs to be fixed
-    target_origin_player_uid = player_list[(this_player_idx + int(round) - 1) % len(player_list)]
-    obj = DB.retrieve_content(target_origin_player_uid, int(round) - 1)
+    target_origin_player_uid = player_list[(this_player_idx + int(round)-1) % len(player_list)]
+    obj = DB.retrieve_content(target_origin_player_uid, int(round)-1)
     return jsonify(obj), 200
 
 

@@ -69,7 +69,8 @@ class MongoDataMgmt(AbstractDataMgmt):
         puid = self._db[str(origin_player_uuid)]
         puid.insert_one({
             "content": content, "round": game_round,
-            "originPlayer": str(player_uuid)
+            "contentCreator": str(player_uuid),
+            "originPlayer": str(origin_player_uuid)
         })
         return
     add_content.__doc__ = AbstractDataMgmt.add_content.__doc__
@@ -77,6 +78,7 @@ class MongoDataMgmt(AbstractDataMgmt):
     def retrieve_content(self, origin_player_uuid: UUID, game_round: int) -> dict:
         puid = self._db[str(origin_player_uuid)]
         obj = puid.find_one({"round": game_round})
+        obj["originPlayer"] = str(origin_player_uuid)
         if obj:
             obj.pop("_id")
             return obj
