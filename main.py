@@ -268,7 +268,10 @@ else:
     import os
     signal.signal(signal.SIGINT, shutdown)
 
-    ADMIN_UID = uuid.UUID(os.environ["ADMIN_UUID"])
+    if "ADMIN_UUID" not in os.environ:
+        ADMIN_UID = uuid.UUID("01234567-0123-4567-89ab-0123456789ab")
+    else:
+        ADMIN_UID = uuid.UUID(os.environ["ADMIN_UUID"])
     init()
 
     sys.stderr.write(f"ADMIN UID: {ADMIN_UID}\n")
