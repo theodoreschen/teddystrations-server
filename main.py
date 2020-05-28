@@ -1,7 +1,8 @@
 from flask import (
     Flask,
     jsonify,
-    request
+    request,
+    send_from_directory
 )
 from flask_cors import CORS
 from functools import wraps
@@ -14,6 +15,7 @@ from teddystrations import (
     RedisStateTracker,
     MongoDataMgmt
 )
+import os
 import sys
 import argparse
 
@@ -31,7 +33,7 @@ logging.basicConfig(
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
 
-app = Flask("teddystrations", static_url_path="")
+app = Flask(__name__, static_url_path="")
 CORS(app)
 
 
@@ -73,8 +75,9 @@ def game_admin():
     if request.method == "DELETE":
         return reset_game()
     elif request.method == "GET":
-        return "<h1>Admin Page</h1>"
-    return '', 404
+        return app.send_static_file('game.html')
+    else:
+        return '', 404
 
 
 @app.route("/game/authenticate", methods=["put"])
@@ -154,15 +157,15 @@ def game_time_remaining():
 @app.route("/game/show-board", methods=["post"])
 @admin_uid_check
 def game_show_board():
-    return 400
+    return '', 400
 
 
 # Player portal endpoints
 @app.route("/")
 def player_page():
     if STATE_TRACKER.get_state() == GameState.UNAUTHENTICATED:
-        return 404
-    return "<h1>Player page</h1>"
+        return '', 404
+    return app.send_static_file("player.html")
 
 
 @app.route("/player/add", methods=["post"])
@@ -198,7 +201,7 @@ def player_submit(uid: str):
     elif request.method == "PUT":
         return '', 200
     else:
-        return 400
+        return '', 400
 
 
 @app.route("/player/<uid>/<round>/")
@@ -229,12 +232,18 @@ def game_get_player(player_uid: str, round: str):
 
 def init():
     global STATE_TRACKER, DB
-       
-    STATE_TRACKER = RedisStateTracker()
+
+    if "REDIS_HOST" in os.environ:
+        STATE_TRACKER = RedisStateTracker(host=os.environ["REDIS_HOST"])
+    else:
+        STATE_TRACKER = RedisStateTracker()
     STATE_TRACKER.set_admin_uuid(ADMIN_UID)
     STATE_TRACKER.set_state(GameState.UNAUTHENTICATED)
 
-    DB = MongoDataMgmt(ADMIN_UID)
+    if "MONGO_HOST" in os.environ:
+        DB = MongoDataMgmt(ADMIN_UID, host=os.environ["MONGO_HOST"])
+    else:
+        DB = MongoDataMgmt(ADMIN_UID)
 
 
 def shutdown(*_):

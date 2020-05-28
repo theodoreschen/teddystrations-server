@@ -10,9 +10,9 @@ class MongoDataMgmt(AbstractDataMgmt):
     _game_data = None
     _players_data = None
 
-    def __init__(self, game_uuid: UUID):
+    def __init__(self, game_uuid: UUID, *, host: str="localhost", port: int=27017):
         super().__init__(game_uuid)
-        self._client = pymongo.MongoClient(host="localhost", port=27017)
+        self._client = pymongo.MongoClient(host=host, port=port)
         
         teddystrations = self._client["teddystrations"]
         registered_games_db = teddystrations["registered_games"]

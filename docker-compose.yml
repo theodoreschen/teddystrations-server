@@ -1,12 +1,37 @@
 version: "3.8"
+networks:
+  ted-net:
+    external: true
 services:
   redis:
     image: redis
-    ports:
-      - "6379:6379"
+    expose: 
+      - 6379
+    # ports:
+      # - "6379:6379"
     container_name: "teddystrations-redis"
+    networks:
+      - ted-net
   mongo:
     image: mongo
-    ports:
-      - "27017:27017"
+    expose: 
+      - 27017
+    # ports:
+      # - "27017:27017"
     container_name: "teddystrations-mongo"
+    networks:
+      - ted-net
+  teddystrations:
+    image: teddystrations
+    links:
+      - mongo
+      - redis
+    ports:
+      - "5000:5000"
+    container_name: "teddystrations-server"
+    networks:
+      - ted-net
+    environment:
+      # - ADMIN_UUID=01234567-0123-4567-89ab-0123456789ab
+      - REDIS_HOST=redis
+      - MONGO_HOST=mongo

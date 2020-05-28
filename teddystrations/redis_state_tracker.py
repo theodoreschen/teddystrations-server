@@ -13,10 +13,10 @@ import time
 class RedisStateTracker(AbstractStateTracker):
     _client: redis.Redis = None
 
-    def __init__(self, *, host="localhost", port="6379"):
+    def __init__(self, *, host: str="localhost", port=6379):
         self._client = redis.Redis(
-            host="localhost", port="6379", 
-            connection_pool=redis.BlockingConnectionPool()
+            host=host, port=port, 
+            # connection_pool=redis.BlockingConnectionPool()
         )
 
     def close(self):
