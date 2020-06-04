@@ -1,5 +1,6 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+
 try:
     from .data_types import Player
 except ImportError:

@@ -4,16 +4,17 @@ from .data_types import Player
 import pymongo
 import time
 
+
 class MongoDataMgmt(AbstractDataMgmt):
     _client = None
     _db = None
     _game_data = None
     _players_data = None
 
-    def __init__(self, game_uuid: UUID, *, host: str="localhost", port: int=27017):
+    def __init__(self, game_uuid: UUID, *, host: str = "localhost", port: int = 27017):
         super().__init__(game_uuid)
         self._client = pymongo.MongoClient(host=host, port=port)
-        
+
         teddystrations = self._client["teddystrations"]
         registered_games_db = teddystrations["registered_games"]
 
@@ -28,11 +29,9 @@ class MongoDataMgmt(AbstractDataMgmt):
         self._client.close()
 
     def set_game_details(self, rounds: int):
-        self._game_data.insert_one({
-            "page": "game_metadata",
-            "rounds": rounds,
-            "date": time.time()
-        })
+        self._game_data.insert_one(
+            {"page": "game_metadata", "rounds": rounds, "date": time.time()}
+        )
         return
 
     def delete_game(self):
@@ -47,14 +46,10 @@ class MongoDataMgmt(AbstractDataMgmt):
         return
 
     def add_player(self, name: str, player_uuid: UUID):
-        self._players_data.insert_one({
-            "player_id": str(player_uuid)
-        })
+        self._players_data.insert_one({"player_id": str(player_uuid)})
         uid = self._db[str(player_uuid)]
-        uid.insert_one({
-            "name": name
-        })
-        return 
+        uid.insert_one({"name": name})
+        return
 
     def get_player(self, uid: UUID) -> Player:
         return super().get_player(uid)
@@ -63,16 +58,19 @@ class MongoDataMgmt(AbstractDataMgmt):
         return super().delete_player(uid)
 
     def add_content(
-        self, player_uuid: UUID, origin_player_uuid:
-        UUID, content: str, game_round: int
+        self, player_uuid: UUID, origin_player_uuid: UUID, content: str, game_round: int
     ):
         puid = self._db[str(origin_player_uuid)]
-        puid.insert_one({
-            "content": content, "round": game_round,
-            "contentCreator": str(player_uuid),
-            "originPlayer": str(origin_player_uuid)
-        })
+        puid.insert_one(
+            {
+                "content": content,
+                "round": game_round,
+                "contentCreator": str(player_uuid),
+                "originPlayer": str(origin_player_uuid),
+            }
+        )
         return
+
     add_content.__doc__ = AbstractDataMgmt.add_content.__doc__
 
     def retrieve_content(self, origin_player_uuid: UUID, game_round: int) -> dict:
@@ -83,4 +81,5 @@ class MongoDataMgmt(AbstractDataMgmt):
             obj.pop("_id")
             return obj
         return {}
+
     retrieve_content.__doc__ = AbstractDataMgmt.retrieve_content.__doc__

@@ -1,20 +1,10 @@
-from flask import (
-    Flask,
-    jsonify,
-    request,
-    send_from_directory
-)
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from functools import wraps
 import logging
 import signal
 import uuid
-from teddystrations import (
-    Player,
-    GameState,
-    RedisStateTracker,
-    MongoDataMgmt
-)
+from teddystrations import Player, GameState, RedisStateTracker, MongoDataMgmt
 import os
 import sys
 import argparse
@@ -24,11 +14,10 @@ ADMIN_UID = None
 STATE_TRACKER = None
 DB = None
 
-ROUND_DURATION = 120 #seconds
+ROUND_DURATION = 120  # seconds
 
 logging.basicConfig(
-    format="[%(asctime)s] - %(levelname)s/%(name)s: %(message)s",
-    level=logging.DEBUG
+    format="[%(asctime)s] - %(levelname)s/%(name)s: %(message)s", level=logging.DEBUG
 )
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
@@ -45,6 +34,7 @@ def admin_uid_check(func):
         if request.args["uid"] != str(ADMIN_UID):
             return "Invalid administrator UUID", 400
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -66,25 +56,26 @@ def game_admin():
     """
     GET/DELETE /game?uid=UUID
     """
+
     @admin_uid_check
     def reset_game():
         STATE_TRACKER.reset_game_state()
         DB.reset_game()
-        return '', 200
+        return "", 200
 
     if request.method == "DELETE":
         return reset_game()
     elif request.method == "GET":
-        return app.send_static_file('game.html')
+        return app.send_static_file("game.html")
     else:
-        return '', 404
+        return "", 404
 
 
 @app.route("/game/authenticate", methods=["put"])
 @admin_uid_check
 def game_admin_auth():
     STATE_TRACKER.set_state(GameState.READY)
-    return '', 200
+    return "", 200
 
 
 @app.route("/game/players", methods=["get"])
@@ -112,7 +103,7 @@ def game_admin_start():
     STATE_TRACKER.set_current_game_round(1)
     # start timer
     STATE_TRACKER.timer_start(ROUND_DURATION)
-    return '', 200
+    return "", 200
 
 
 @app.route("/game/end-round", methods=["put"])
@@ -120,19 +111,23 @@ def game_admin_start():
 def game_admin_end_round():
     STATE_TRACKER.timer_stop()
     STATE_TRACKER.set_state(GameState.ROUND_IDLE)
-    return '', 200
+    return "", 200
 
 
 @app.route("/game/next-round", methods=["put"])
 @admin_uid_check
 def game_admin_next_round():
-    if STATE_TRACKER.get_number_of_game_rounds() == STATE_TRACKER.get_current_game_round():
+    STATE_TRACKER.round_submission_clear()
+    if (
+        STATE_TRACKER.get_number_of_game_rounds()
+        == STATE_TRACKER.get_current_game_round()
+    ):
         STATE_TRACKER.set_state(GameState.VIEWING_IDLE)
     else:
         STATE_TRACKER.set_state(GameState.ROUND_ACTIVE)
         STATE_TRACKER.increment_game_round()
         STATE_TRACKER.timer_start(ROUND_DURATION)
-    return '', 200
+    return "", 200
 
 
 @app.route("/game/current-round/time-remaining")
@@ -149,7 +144,7 @@ def game_time_remaining():
         "round": STATE_TRACKER.get_current_game_round(),
         "totalRounds": STATE_TRACKER.get_number_of_game_rounds(),
         "roundDuration": t.duration,
-        "timeRemaining": time_remaining
+        "timeRemaining": time_remaining,
     }
     return jsonify(retobj), 200
 
@@ -157,14 +152,14 @@ def game_time_remaining():
 @app.route("/game/show-board", methods=["post"])
 @admin_uid_check
 def game_show_board():
-    return '', 400
+    return "", 400
 
 
 # Player portal endpoints
 @app.route("/")
 def player_page():
     if STATE_TRACKER.get_state() == GameState.UNAUTHENTICATED:
-        return '', 404
+        return "", 404
     return app.send_static_file("player.html")
 
 
@@ -197,26 +192,31 @@ def player_submit(uid: str):
         player_uuid = uuid.UUID(uid)
         origin_uuid = uuid.UUID(data["originPlayer"])
         DB.add_content(player_uuid, origin_uuid, data["content"], int(data["round"]))
-        return '', 200
+        STATE_TRACKER.round_submission_add_player(player_uuid)
+        return "", 200
     elif request.method == "PUT":
-        return '', 200
+        return "", 200
     else:
-        return '', 400
+        return "", 400
 
 
 @app.route("/player/<uid>/<round>/")
 def player_get_content(uid: str, round: str):
     player_list = STATE_TRACKER.get_player_order()
+
     def find_player_idx(uid):
         for idx, u in enumerate(player_list):
             if u == uid:
                 return idx
+
     this_player_idx = find_player_idx(uid)
     if this_player_idx is None:
         return 400
     # need to subtract 1 because we want to return the previous round's information
-    target_origin_player_uid = player_list[(this_player_idx + int(round)-1) % len(player_list)]
-    obj = DB.retrieve_content(target_origin_player_uid, int(round)-1)
+    target_origin_player_uid = player_list[
+        (this_player_idx + int(round) - 1) % len(player_list)
+    ]
+    obj = DB.retrieve_content(target_origin_player_uid, int(round) - 1)
     return jsonify(obj), 200
 
 
@@ -228,6 +228,16 @@ def game_get_player(player_uid: str, round: str):
     """
     obj = DB.retrieve_content(player_uid, int(round))
     return jsonify(obj), 200
+
+
+@app.route("/game/players-submitted")
+@admin_uid_check
+def game_players_submitted():
+    """
+    GET /game/players-submitted?uid=UUID
+    """
+    players = STATE_TRACKER.round_submission_all_players()
+    return jsonify(players), 200
 
 
 def init():
@@ -254,8 +264,8 @@ def shutdown(*_):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Launch the Teddystrations backend server")
-    parser.add_argument('--debug', action='store_true', help="debug mode")
-    parser.add_argument('uuid', help="game_uuid")
+    parser.add_argument("--debug", action="store_true", help="debug mode")
+    parser.add_argument("uuid", help="game_uuid")
     args = parser.parse_args()
 
     DEBUG = args.debug
@@ -275,6 +285,7 @@ if __name__ == "__main__":
 else:
     import signal
     import os
+
     signal.signal(signal.SIGINT, shutdown)
 
     if "ADMIN_UUID" not in os.environ:

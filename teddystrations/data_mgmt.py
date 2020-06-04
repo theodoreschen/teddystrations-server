@@ -1,7 +1,4 @@
-from abc import (
-    ABC,
-    abstractmethod
-)
+from abc import ABC, abstractmethod
 from uuid import UUID
 from .data_types import Player
 
@@ -42,8 +39,7 @@ class AbstractDataMgmt(ABC):
 
     @abstractmethod
     def add_content(
-        self, player_uuid: UUID, origin_player_uuid: UUID, 
-        content: str, game_round: int
+        self, player_uuid: UUID, origin_player_uuid: UUID, content: str, game_round: int
     ):
         return
 

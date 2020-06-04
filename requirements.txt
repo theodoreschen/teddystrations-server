@@ -1,7 +1,8 @@
 flask
-flask-cors
+flask - cors
 jsonschema
-docker-compose
+docker - compose
 redis
 pymongo
 uwsgi
+black

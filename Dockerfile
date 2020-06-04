@@ -7,8 +7,8 @@ USER game-manager
 WORKDIR /home/game-manager
 
 ADD game-server.ini main.py /home/game-manager/
-ADD static/* static/
-ADD teddystrations/* teddystrations/ 
+COPY static/ static/
+COPY teddystrations/ teddystrations/
 
 # CMD ["tail", "-f", "/dev/null"]
 CMD ["uwsgi", "--ini", "game-server.ini"]

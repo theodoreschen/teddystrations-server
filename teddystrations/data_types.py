@@ -23,7 +23,8 @@ class GameState(Enum):
 _game_state_list = [name.lower() for name, _ in GameState.__members__.items()]
 _game_state_map = {name.lower(): state for name, state in GameState.__members__.items()}
 
-def str_to_game_state(state: str="unknown") -> GameState:
+
+def str_to_game_state(state: str = "unknown") -> GameState:
     if state.lower() not in _game_state_list:
         return GameState.UNKNOWN
     return _game_state_map[state.lower()]
@@ -33,7 +34,7 @@ class Player:
     name: str
     uid: uuid.UUID
 
-    def __init__(self, *, name: str=None, uid: uuid.UUID=None):
+    def __init__(self, *, name: str = None, uid: uuid.UUID = None):
         self.name = name
         self.uid = uid
 
@@ -43,16 +44,12 @@ class Player:
         if self.name is None:
             self.name = str(self.uid)
 
-
     def to_dict(self) -> dict:
         """
         :return: dictionary representation of the Player object
         :rtype: dict
         """
-        return {
-            "name": self.name,
-            "uid": str(self.uid)
-        }
+        return {"name": self.name, "uid": str(self.uid)}
 
     def to_json(self) -> str:
         """
@@ -75,7 +72,7 @@ class Timer:
     timer_start: int
     duration: int
 
-    def __init__(self, *, timer_start : int=0, duration : int=0):
+    def __init__(self, *, timer_start: int = 0, duration: int = 0):
         self.timer_start = timer_start
         self.duration = duration
 
@@ -84,10 +81,7 @@ class Timer:
         :return: dict respresentation of the Timer object
         :rtype: dict
         """
-        return {
-            "timer_start": timer_start,
-            "duration": duration
-        }
+        return {"timer_start": timer_start, "duration": duration}
 
     def time_remaining(self) -> int:
         """

@@ -1,5 +1,6 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+
 try:
     from .data_types import Player
 except ImportError:
@@ -28,10 +29,7 @@ class TestPlayer(TestCase):
     def test_from_json(self):
         test_uid = uuid.uuid4()
         test_name = "test"
-        test_obj = json.dumps({
-            "name": test_name,
-            "uid": str(test_uid)
-        })
+        test_obj = json.dumps({"name": test_name, "uid": str(test_uid)})
 
         p = Player.from_json(test_obj)
 

@@ -1,7 +1,4 @@
-from abc import (
-    ABC,
-    abstractmethod
-)
+from abc import ABC, abstractmethod
 from .data_types import GameState
 from uuid import UUID
 
@@ -82,7 +79,7 @@ class AbstractStateTracker(ABC):
         return -1
 
     @abstractmethod
-    def set_viewing_uuid(self, uid: UUID, index: int=0):
+    def set_viewing_uuid(self, uid: UUID, index: int = 0):
         return
 
     @abstractmethod
@@ -105,7 +102,7 @@ class AbstractStateTracker(ABC):
         return GameState.UNKNOWN
 
     @abstractmethod
-    def timer_start(self, duration: int=60):
+    def timer_start(self, duration: int = 60):
         """
         :param duration int: number of seconds to set the timer
         """
@@ -170,5 +167,31 @@ class AbstractStateTracker(ABC):
     def reset_game_state(self):
         """
         Resets the game to its original state
+        """
+        return
+
+    @abstractmethod
+    def round_submission_add_player(self, uid: UUID):
+        """
+        Add player who's submitted to the current round
+
+        :param uid UUID: player UUID
+        """
+        return
+
+    @abstractmethod
+    def round_submission_all_players(self) -> list:
+        """
+        Fetch all players who have completed their submission for the round
+
+        :return: a list of all Players
+        :rtype: list
+        """
+        return []
+
+    @abstractmethod
+    def round_submission_clear(self):
+        """
+        Clear submission list
         """
         return
