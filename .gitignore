@@ -133,3 +133,6 @@ dmypy.json
 
 # Generated min js
 static/
+
+# Project specific nomenclature
+*\.devel\.*

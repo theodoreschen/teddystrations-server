@@ -170,8 +170,8 @@ def player_add():
     data = request.get_json()
     # TODO: jsonschema check data
     player_uid = uuid.uuid4()
-    STATE_TRACKER.add_player(data["name"], player_uid)
-    DB.add_player(data["name"], player_uid)
+    new_name = STATE_TRACKER.add_player(data["name"], player_uid)
+    DB.add_player(new_name, player_uid)
     return jsonify({"name": data["name"], "uid": str(player_uid)}), 200
 
 

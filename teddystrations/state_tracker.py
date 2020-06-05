@@ -124,12 +124,18 @@ class AbstractStateTracker(ABC):
         return {}
 
     @abstractmethod
-    def add_player(self, name: str, uid: UUID):
+    def add_player(self, name: str, uid: UUID) -> str:
         """
+        Add player to the game. This function will also de-dupe
+        the player's name if it's identical to an existing player
+        name.
+
         :param name str: Name of player
         :param uuid UUID: Generated UUID for player
+        :return: de-duped version of the name passed in as arg
+        :rtype: str
         """
-        return
+        return ""
 
     @abstractmethod
     def get_player(self, uid: UUID) -> dict:

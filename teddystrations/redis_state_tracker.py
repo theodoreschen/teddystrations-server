@@ -117,13 +117,25 @@ class RedisStateTracker(AbstractStateTracker):
 
     get_timer_info.__doc__ = AbstractStateTracker.get_timer_info.__doc__
 
-    def add_player(self, name: str, uid: uuid.UUID):
+    def add_player(self, name: str, uid: uuid.UUID) -> str:
+        player_uids = [p.decode("utf8") for p in self._client.smembers("players")]
+        identical_name_count = 0
+        for puid in player_uids:
+            player_name = self._client.hget(puid, "name")
+            if player_name is not None:
+                if player_name.decode().startswith(name):
+                    identical_name_count += 1
+        if identical_name_count > 0:
+            # Going to display as if we're indexing by 1, because people don't normally
+            # index by 0
+            name = f"{name}-{identical_name_count+1}"
+
         pipe = self._client.pipeline()
         pipe.sadd("players", str(uid))
         pipe.rpush("player-order", str(uid))
         pipe.hset(str(uid), "name", name)
         pipe.execute()
-        return
+        return name
 
     add_player.__doc__ = AbstractStateTracker.add_player.__doc__
 
