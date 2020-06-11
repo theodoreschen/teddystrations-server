@@ -9,7 +9,7 @@ mv ng-teddystrations-game/* static/.
 mv static/index.html static/game.html
 rmdir ng-teddystrations-game
 
-curl -sL https://github.com/theodoreschen/ng-teddystrations-players/releases/download/v1.1/ng-teddystrations-players.tgz --output ng-teddystrations-players.tgz
+curl -sL https://github.com/theodoreschen/ng-teddystrations-players/releases/download/v1.1.1/ng-teddystrations-players.tgz --output ng-teddystrations-players.tgz
 tar xzvf ng-teddystrations-players.tgz
 mv ng-teddystrations-players/* static/.
 mv static/index.html static/player.html
